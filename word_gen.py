@@ -6,6 +6,8 @@ import numpy as np
 words = dict()
 word_conv = list()
 
+# a word is: [ID, syllables, syllables when ending, alternate syllable count]
+
 with open("data/Syllable_dictionary.txt") as f:
 	for index, line in enumerate(f):
 		contents = line.split(" ")
@@ -41,62 +43,59 @@ with open("output.csv",'w') as resultFile:
 
 
 
-# Convert a single line to a valid 10 syllable line
-def gen_line(line):
-	contents = line.split(" ")
-	converts = np.zeros([len(contents), 3])
-	multi = false
-	for i, c in enumerate(contents):
-		contents[i] = (words.index(i))
-		if(word.conv[:, 0].where(c).shape[0] == 1):
-			converts[i] = word_conv[c]
-		else:
-			multi = true
-	if(multi):
-		syls = np.sum(converts[:, 1])
-		mutlis = converts[:, 1].where(0)
-		print(multis.shape[0]) 
-
-
-
-
-
-
-
-
-
-
+# convert every poem in the text file to its associated ID
 poems = list()
 poems_text = list()
 
 with open("data/shakespeare.txt") as f:
+	# The poem we are currently on
 	index = 0
+
+	# whether we are starting a new poem based on a line
 	new = False
 	for line in f:
+		# Remove leading spaces, strip punctuation and convert to lowercase
 		l = line.lstrip()[:-1].replace(',', '').replace('"', '').replace(':', '').replace(';', '').replace('.', '').replace('?', '').replace('!', '').replace('(', '').replace(')', '').lower()
+		
+		# If our line is not blank (blanks mean we are in between poems)
 		if(len(list(filter(None, l.split(" "))))>0):
+			
+			# Check if we already started a new poem
 			if(new):
 				l_mod = list()
 				for i, w in enumerate(l.split(" ")):
+
+					# Check if the word is in the list, if not, drop "'" and try again
 					if w in words:
 						l_mod.append(words[w])
 					else:
 						l_mod.append(words[w.replace("'", "")])
+
+					# Pick the first instance of the word in the dictionary
 					conv = word_conv[np.where( word_conv[:, 0] == l_mod[-1] )][0]
-					# sprint(conv)
+					
+					# If we have an ending character and are on the last character, then replace with end value
 					if(int(conv[2]) > 0 and i == len(l.split())-1):
 						conv[1] = conv[2]
 						for w,v in words.items():
 							if(v==conv[0]):
 								# print(w)
 								break
+
+					# Set the output to the modified dictionary entry
 					l_mod[-1] = conv
+
+				# Add the line to the current poem
 				poems[-1].append(l_mod)
 				poems_text[-1].append(l)
+
+			# If we have not started, a new poem, start a new poem
 			else:
 				poems.append(list())
 				poems_text.append(list())
 				new = True
+
+		# If we are on a blank, move to the next poem and indicate that we have not started a new one
 		else:
 			# print('\n',end='')
 			index += 1
@@ -110,17 +109,26 @@ with open("data/shakespeare.txt") as f:
 
 
 
-
+# Loop through the poems, correcting line lengths
 for poem in poems:
 	for line in poem:
+
+		# Keeping track of all the instances with multiple syllable counts
 		multi = list()
+
+		# Syllable count of the current line
 		syls = 0
 		for i, word in enumerate(line):
 			if(word[3] > 0):
 				multi.append(i)
 			syls += word[1]
+		# If we do not have 10 syllables and have words with multiple syllables
 		if(syls != 10 and len(multi) > 0):
+
+			# then loop through all multiple syllable words
 			for i in multi:
+
+				# and if they fix the syllable count, switch the syllable count with the correct one
 				if(10-syls == line[i][3]-line[i][1]):
 					syls-=line[i][1]
 					syls+=line[i][3]
@@ -133,7 +141,7 @@ for poem in poems:
 
 
 
-
+# Testing function, prints the output
 def a():
 	for j, poem in enumerate(poems):
 		print(str(j)+'\n')
@@ -157,7 +165,7 @@ def a():
 
 
 
-
+# Testing function, prints the poems as syllables per line, and marks ones with multiple possible syllables
 def b():
 	for j, poem in enumerate(poems):
 		print(str(j)+'\n')
@@ -179,6 +187,7 @@ def b():
 
 
 
+# Produce the output
 with open("poems.txt",'w') as resultFile:
 	for p in poems:
 		for l in p:
