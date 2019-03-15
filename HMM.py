@@ -7,6 +7,7 @@
 ########################################
 
 import random
+import numpy as np
 
 class HiddenMarkovModel:
     '''
@@ -417,11 +418,79 @@ class HiddenMarkovModel:
             
             if next_word_syls <= n_syls - t:
                 emission.append(obs_map[next_word_idx[0]][0])
-                states.append[next_state]
+                states.append(next_state[0])
                 t += next_word_syls
             
 
         return emission, states
+    
+    def generate_emission_rhyme(self, obs_map, first_word, rhyme_dict, n_syls=10):
+        '''
+        Generates an emission of length M, assuming that the starting state
+        is chosen uniformly at random. 
+
+        Arguments:
+            M:          Length of the emission to generate.
+
+        Returns:
+            emission:   The randomly generated emission as a list.
+
+            states:     The randomly generated states as a list.
+        '''
+
+        emission1 = [obs_map[first_word][0]]
+        state_probs = np.array(self.O)[:, first_word]
+        probs_sum = sum(state_probs)
+        norm_probs = np.array(state_probs) / probs_sum
+        state = random.choices(list(range(self.L)), weights=norm_probs)
+        states1 = [state[0]]
+        
+        # Get syllable number
+        t = obs_map[first_word][1]
+
+        while t < n_syls:
+
+            probs = self.A[states1[-1]]
+            next_state = random.choices(list(range(self.L)), weights=probs)
+            emission_probs = self.O[next_state[0]]
+            
+            next_word_idx = random.choices(list(range(self.D)), weights=emission_probs)
+            next_word_syls = obs_map[next_word_idx[0]][1]
+            
+            if next_word_syls <= n_syls - t:
+                emission1.append(obs_map[next_word_idx[0]][0])
+                states1.append(next_state[0])
+                t += next_word_syls
+                
+                
+                
+                
+        emission2 = [obs_map[rhyme_dict[first_word]][0]]
+        state_probs = np.array(self.O)[:, rhyme_dict[first_word]]
+        probs_sum = sum(state_probs)
+        norm_probs = np.array(state_probs) / probs_sum
+        state = random.choices(list(range(self.L)), weights=norm_probs)
+        states2 = [state[0]]
+        
+        # Get syllable number
+        t = obs_map[rhyme_dict[first_word]][1]
+
+        while t < n_syls:
+
+            probs = self.A[states2[-1]]
+            next_state = random.choices(list(range(self.L)), weights=probs)
+            emission_probs = self.O[next_state[0]]
+            
+            next_word_idx = random.choices(list(range(self.D)), weights=emission_probs)
+            next_word_syls = obs_map[next_word_idx[0]][1]
+            
+            if next_word_syls <= n_syls - t:
+                emission2.append(obs_map[next_word_idx[0]][0])
+                states2.append(next_state[0])
+                t += next_word_syls
+            
+
+        return emission1[::-1], emission2[::-1]
 
 
     def probability_alphas(self, x):

@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 from matplotlib import animation
 from matplotlib.animation import FuncAnimation
+import random
 
 
 ####################
@@ -118,17 +119,45 @@ def obs_map_reverser(obs_map):
     return obs_map_r
 
 def sample_sonnet(hmm, obs_map, n_syl=10, n_lines=14):
-    # Get reverse map.
-    obs_map_r = obs_map_reverser(obs_map)
+    
     sonnet = []
 
     # Sample and convert sentence.
     for n in range(n_lines):
         emission, states = hmm.generate_emission(obs_map)
-        sonnet.append[emission]
+        sonnet.append(emission)
 
     return sonnet
 
+def sample_rhyming_sonnet(hmm, obs_map, rhyme_dict, n_syl=10, n_lines=14):
+    
+    sonnet = [[] for i in range(n_lines)]
+    sonnet_lines = []
+    pairs = random.sample(rhyme_dict.keys(), 7)
+    
+    counter = 0
+    for word in pairs:
+        emission1, emission2 = hmm.generate_emission_rhyme(obs_map, word, rhyme_dict)
+        sonnet_lines.append(emission1)
+        sonnet_lines.append(emission2)
+
+    # Sample and convert sentence.
+    sonnet[0] = sonnet_lines[0]
+    sonnet[1] = sonnet_lines[2]
+    sonnet[2] = sonnet_lines[1]
+    sonnet[3] = sonnet_lines[3]
+    sonnet[4] = sonnet_lines[4]
+    sonnet[5] = sonnet_lines[6]
+    sonnet[6] = sonnet_lines[5]
+    sonnet[7] = sonnet_lines[7]
+    sonnet[8] = sonnet_lines[8]
+    sonnet[9] = sonnet_lines[10]
+    sonnet[10] = sonnet_lines[9]
+    sonnet[11] = sonnet_lines[11]
+    sonnet[12] = sonnet_lines[12]
+    sonnet[13] = sonnet_lines[13]
+
+    return sonnet
 
 ####################
 # HMM VISUALIZATION FUNCTIONS
