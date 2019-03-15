@@ -381,7 +381,7 @@ class HiddenMarkovModel:
                 for xt in range(self.D):
                     self.O[curr][xt] = O_num[curr][xt] / O_den[curr]
 
-    def generate_emission(self, M):
+    def generate_emission(self, obs_map, n_syls=10):
         '''
         Generates an emission of length M, assuming that the starting state
         is chosen uniformly at random. 
@@ -397,33 +397,29 @@ class HiddenMarkovModel:
 
         emission = []
         state = random.choice(range(self.L))
-        states = []
+        states = [state]
 
-        for t in range(M):
-            # Append state.
-            states.append(state)
+        first_state_row = self.O[state]
+        first_ob = random.choices(list(range(self.D)), weights=first_state_row)
+        # Get word
+        emission.append(obs_map[first_ob[0]][0])
+        # Get syllable number
+        t = obs_map[first_ob[0]][1]
 
-            # Sample next observation.
-            rand_var = random.uniform(0, 1)
-            next_obs = 0
+        while t < n_syls:
 
-            while rand_var > 0:
-                rand_var -= self.O[state][next_obs]
-                next_obs += 1
-
-            next_obs -= 1
-            emission.append(next_obs)
-
-            # Sample next state.
-            rand_var = random.uniform(0, 1)
-            next_state = 0
-
-            while rand_var > 0:
-                rand_var -= self.A[state][next_state]
-                next_state += 1
-
-            next_state -= 1
-            state = next_state
+            probs = self.A[states[-1]]
+            next_state = random.choices(list(range(self.L)), weights=probs)
+            emission_probs = self.O[next_state[0]]
+            
+            next_word_idx = random.choices(list(range(self.D)), weights=emission_probs)
+            next_word_syls = obs_map[next_word_idx[0]][1]
+            
+            if next_word_syls <= n_syls - t:
+                emission.append(obs_map[next_word_idx[0]][0])
+                states.append[next_state]
+                t += next_word_syls
+            
 
         return emission, states
 

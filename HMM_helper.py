@@ -117,15 +117,17 @@ def obs_map_reverser(obs_map):
 
     return obs_map_r
 
-def sample_sentence(hmm, obs_map, n_words=100):
+def sample_sonnet(hmm, obs_map, n_syl=10, n_lines=14):
     # Get reverse map.
     obs_map_r = obs_map_reverser(obs_map)
+    sonnet = []
 
     # Sample and convert sentence.
-    emission, states = hmm.generate_emission(n_words)
-    sentence = [obs_map_r[i] for i in emission]
+    for n in range(n_lines):
+        emission, states = hmm.generate_emission(obs_map)
+        sonnet.append[emission]
 
-    return ' '.join(sentence).capitalize() + '...'
+    return sonnet
 
 
 ####################
